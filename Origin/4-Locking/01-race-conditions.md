@@ -18,8 +18,6 @@ As an example on why we need locks, consider several processors sharing a single
 11 struct list *l;
 ```
 
-CPU 1 15 16 Memory l->next list l->next list CPU2 15 16 Time 
-
 ![Figure 4-1](../../PIC/Figure-4-1.png)
 
 Figure 4-1. Example race
@@ -33,7 +31,9 @@ Figure 4-1. Example race
 17 }
 ```
 
-Proving this implementation correct is a typical exercise in a data structures and algorithms class. Even though this implementation can be proved correct, it isn’t, at least not on a multiprocessor. If two different CPUs execute insert at the same time, it could happen that both execute line 15 before either executes 16 (see Figure 4-1). If this happens, there will now be two list nodes with next set to the former value of list. When the two assignments to list happen at line 16, the second one will overwrite the first; the node involved in the first assignment will be lost. This kind of problem is called a race condition. The problem with races is that they depend on the exact timing of the two CPUs involved and how their memory operations are ordered by the memory system, and are consequently difficult to reproduce. For example, adding print statements while debugging insert might change the timing of the execution enough to make the race disappear. The typical way to avoid races is to use a lock. Locks ensure mutual exclusion, so that only one CPU can execute insert at a time; this makes the scenario above impossible. The correctly locked version of the above code adds just a few lines (not numbered):
+Proving this implementation correct is a typical exercise in a data structures and algorithms class. Even though this implementation can be proved correct, it isn’t, at least not on a multiprocessor. If two different CPUs execute insert at the same time, it could happen that both execute line 15 before either executes 16 (see Figure 4-1). If this happens, there will now be two list nodes with next set to the former value of list. When the two assignments to list happen at line 16, the second one will overwrite the first; the node involved in the first assignment will be lost. This kind of problem is called a race condition. The problem with races is that they depend on the exact timing of the two CPUs involved and how their memory operations are ordered by the memory system, and are consequently difficult to reproduce. For example, adding print statements while debugging insert might change the timing of the execution enough to make the race disappear.
+
+The typical way to avoid races is to use a lock. Locks ensure mutual exclusion, so that only one CPU can execute insert at a time; this makes the scenario above impossible. The correctly locked version of the above code adds just a few lines (not numbered):
 
 ```c
 6 struct list *list = 0;

@@ -14,7 +14,15 @@ log_write(bp);
 commit_trans();
 ```
 
-begin_trans (4277) waits until it obtains exclusive use of the log and then returns. log_write (4325) acts as a proxy for bwrite; it appends the block’s new content to the log on disk and records the block’s sector number in memory. log_write leaves the modified block in the in-memory buffer cache, so that subsequent reads of the block during the transaction will yield the modified block. log_write notices when a block is written multiple times during a single transaction, and overwrites the block’s previous copy in the log. commit_trans (4301) first writes the log’s header block to disk, so that a crash after this point will cause recovery to re-write the blocks in the log. commit_trans then calls install_trans (4221) to read each block from the log and write it to the proper place in the file system. Finally commit_trans writes the log header with a count of zero, so that a crash after the next transaction starts will result in the recovery code ignoring the log. recover_from_log (4268) is called from initlog (4205), which is called during boot before the first user process runs. (2544) It reads the log header, and mimics the actions of commit_trans if the header indicates that the log contains a committed transaction. An example use of the log occurs in filewrite (5352). The transaction looks like this:
+begin_trans (4277) waits until it obtains exclusive use of the log and then returns.
+
+log_write (4325) acts as a proxy for bwrite; it appends the block’s new content to the log on disk and records the block’s sector number in memory. log_write leaves the modified block in the in-memory buffer cache, so that subsequent reads of the block during the transaction will yield the modified block. log_write notices when a block is written multiple times during a single transaction, and overwrites the block’s previous copy in the log.
+
+commit_trans (4301) first writes the log’s header block to disk, so that a crash after this point will cause recovery to re-write the blocks in the log. commit_trans then calls install_trans (4221) to read each block from the log and write it to the proper place in the file system. Finally commit_trans writes the log header with a count of zero, so that a crash after the next transaction starts will result in the recovery code ignoring the log.
+
+recover_from_log (4268) is called from initlog (4205), which is called during boot before the first user process runs. (2544) It reads the log header, and mimics the actions of commit_trans if the header indicates that the log contains a committed transaction.
+
+An example use of the log occurs in filewrite (5352). The transaction looks like this:
 
 ```c
 begin_trans();

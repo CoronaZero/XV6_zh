@@ -2,4 +2,10 @@
 
 > 来源：book-rev7.pdf，第 33–44 页（英文原文）
 
-We saw in the last section that each handler sets up a trap frame and then calls the C function trap. Trap (3101) looks at the hardware trap number tf->trapno to decide why it has been called and what needs to be done. If the trap is T_SYSCALL, trap calls the system call handler syscall. We’ll revisit the two cp->killed checks in Chapter 5. After checking for a system call, trap looks for hardware interrupts (which we discuss below). In addition to the expected hardware devices, a trap can be caused by a spurious interrupt, an unwanted hardware interrupt. If the trap is not a system call and not a hardware device looking for attention, trap assumes it was caused by incorrect behavior (e.g., divide by zero) as part of the code that was executing before the trap. If the code that caused the trap was a user program, xv6 prints details and then sets cp->killed to remember to clean up the user process. We will look at how xv6 does this cleanup in Chapter 5. If it was the kernel running, there must be a kernel bug: trap prints details about the surprise and then calls panic.
+We saw in the last section that each handler sets up a trap frame and then calls the C function trap. Trap (3101) looks at the hardware trap number tf->trapno to decide why it has been called and what needs to be done. If the trap is T_SYSCALL, trap calls the system call handler syscall. We’ll revisit the two cp->killed checks in Chapter 5.
+
+After checking for a system call, trap looks for hardware interrupts (which we discuss below). In addition to the expected hardware devices, a trap can be caused by a spurious interrupt, an unwanted hardware interrupt.
+
+If the trap is not a system call and not a hardware device looking for attention, trap assumes it was caused by incorrect behavior (e.g., divide by zero) as part of the code that was executing before the trap. If the code that caused the trap was a user program, xv6 prints details and then sets cp->killed to remember to clean up the user process. We will look at how xv6 does this cleanup in Chapter 5.
+
+If it was the kernel running, there must be a kernel bug: trap prints details about the surprise and then calls panic.

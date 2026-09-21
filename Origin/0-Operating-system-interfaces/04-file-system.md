@@ -11,7 +11,9 @@ open("c", O_RDONLY);
 open("/a/b/c", O_RDONLY);
 ```
 
-The first fragment changes the process’s current directory to /a/b; the second neither refers to nor modifies the process’s current directory. There are multiple system calls to create a new file or directory: mkdir creates a new directory, open with the O_CREATE flag creates a new data file, and mknod creates a new device file. This example illustrates all three:
+The first fragment changes the process’s current directory to /a/b; the second neither refers to nor modifies the process’s current directory.
+
+There are multiple system calls to create a new file or directory: mkdir creates a new directory, open with the O_CREATE flag creates a new data file, and mknod creates a new device file. This example illustrates all three:
 
 ```c
 mkdir("/dir");
@@ -20,7 +22,9 @@ close(fd);
 mknod("/console", 1, 1);
 ```
 
-Mknod creates a file in the file system, but the file has no contents. Instead, the file’s metadata marks it as a device file and records the major and minor device numbers (the two arguments to mknod), which uniquely identify a kernel device. When a process later opens the file, the kernel diverts read and write system calls to the kernel device implementation instead of passing them to the file system. fstat retrieves information about the object a file descriptor refers to. It fills in a struct stat, defined in stat.h as:
+Mknod creates a file in the file system, but the file has no contents. Instead, the file’s metadata marks it as a device file and records the major and minor device numbers (the two arguments to mknod), which uniquely identify a kernel device. When a process later opens the file, the kernel diverts read and write system calls to the kernel device implementation instead of passing them to the file system.
+
+fstat retrieves information about the object a file descriptor refers to. It fills in a struct stat, defined in stat.h as:
 
 ```c
 #define T_DIR 1 // Directory
@@ -42,7 +46,9 @@ open("a", O_CREATE|O_WRONLY);
 link("a", "b");
 ```
 
-Reading from or writing to a is the same as reading from or writing to b. Each inode is identified by a unique inode number. After the code sequence above, it is possible to determine that a and b refer to the same underlying contents by inspecting the result of fstat: both will return the same inode number (ino), and the nlink count will be set to 2. The unlink system call removes a name from the file system. The file’s inode and the disk space holding its content are only freed when the file’s link count is zero and no file descriptors refer to it. Thus adding
+Reading from or writing to a is the same as reading from or writing to b. Each inode is identified by a unique inode number. After the code sequence above, it is possible to determine that a and b refer to the same underlying contents by inspecting the result of fstat: both will return the same inode number (ino), and the nlink count will be set to 2.
+
+The unlink system call removes a name from the file system. The file’s inode and the disk space holding its content are only freed when the file’s link count is zero and no file descriptors refer to it. Thus adding
 
 ```c
 unlink("a");
@@ -55,4 +61,8 @@ fd = open("/tmp/xyz", O_CREATE|O_RDWR);
 unlink("/tmp/xyz");
 ```
 
-is an idiomatic way to create a temporary inode that will be cleaned up when the process closes fd or exits. Xv6 commands for file system operations are implemented as user-level programs such as mkdir, ln, rm, etc. This design allows anyone to extend the shell with new user commands. In hind-sight this plan seems obvious, but other systems designed at the time of Unix often built such commands into the shell (and built the shell into the kernel). One exception is cd, which is built into the shell (8016). cd must change the current working directory of the shell itself. If cd were run as a regular command, then the shell would fork a child process, the child process would run cd, and cd would change the child ’s working directory. The parent’s (i.e., the shell’s) working directory would not change.
+is an idiomatic way to create a temporary inode that will be cleaned up when the process closes fd or exits.
+
+Xv6 commands for file system operations are implemented as user-level programs such as mkdir, ln, rm, etc. This design allows anyone to extend the shell with new user commands. In hind-sight this plan seems obvious, but other systems designed at the time of Unix often built such commands into the shell (and built the shell into the kernel).
+
+One exception is cd, which is built into the shell (8016). cd must change the current working directory of the shell itself. If cd were run as a regular command, then the shell would fork a child process, the child process would run cd, and cd would change the child ’s working directory. The parent’s (i.e., the shell’s) working directory would not change.
